@@ -1,8 +1,15 @@
 #include <iostream>
-#include <unistd.h>
+#include <getopt.h>
 #include "project_info.h"
 #include "version.h"
+#include "web_server_class.hpp"
+#include "web_client_class.hpp"
 #include "rapidjson/document.h"
+
+const option longOptions[] = {
+    { "version", no_argument, nullptr, 'v' },
+    { nullptr, 0, nullptr, 0 }
+};
 
 void printProjectInformation()
 {
@@ -14,13 +21,24 @@ void printProjectInformation()
 
 int main(int argc, char** argv)
 {
-    int option;
-    while ((option = getopt(argc, argv, "v")) != -1)
+    WebClient client("127.0.0.1", 5632, 1000);
+    WebServer server(5632, 1000);
+
+    int option, optinx;
+    while ((option = getopt_long(argc, argv, "scv", longOptions, &optinx)) != -1)
     {
         switch (option)
         {
         case 'v':
             printProjectInformation();
+            break;
+
+        case 's':
+            server.testNet();
+            break;
+
+        case 'c':
+            client.testNet();
             break;
 
         default:
