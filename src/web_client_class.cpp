@@ -2,6 +2,15 @@
 
 WebClient::WebClient(const char* ip, int port, int buffer_size) : ip_(ip), port_(port), buffer_size_(buffer_size) {}
 
+bool WebClient::tryConnect(int& client, sockaddr_in& server_address) const
+{
+    bool status = connect(client,
+                          reinterpret_cast<const sockaddr*>(&server_address),
+                          sizeof(server_address)) == 0;
+
+    return status;
+}
+
 void WebClient::testNet()
 {
     int client;
@@ -23,19 +32,14 @@ void WebClient::testNet()
 
     std::cout << "Client socket created" << std::endl;
 
-    int ret = connect(client,
-                reinterpret_cast<const sockaddr*>(&server_address),
-                sizeof(server_address)) == 0;
-
-    if (ret == 0)
+    if (!tryConnect(client, server_address))
     {
-        std::cout << "=> Connection to server"
-                  << inet_ntoa(server_address.sin_addr)
-                  << ":" << this->port_ << std::endl;
+        g_main_logger.logError("Failed to establish a connection to the target device on port " + std::to_string(port_) +
+                               " and address " + std::string(ip_));
+        exit(1);
     }
 
     std::cout << "Waiting for server confirmation..." << std::endl;
-
 
     char buffer[this->buffer_size_];
     recv(client, buffer, this->buffer_size_, 0);
