@@ -6,11 +6,16 @@
 class Logger
 {
 public:
+    static Logger* global_instance;
+    static Logger* getInstance();
+
+    Logger(const Logger& other) = delete;
+    void operator = (const Logger& other) = delete;
+
     Logger();
     void logError(std::string text) const;
     void logMessage(std::string text) const;
+    void logSuccess(std::string text) const;
 };
-
-const Logger g_main_logger;
 
 #endif // LOGGER_HPP

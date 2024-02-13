@@ -34,7 +34,7 @@ void WebClient::testNet()
 
     if (!tryConnect(client, server_address))
     {
-        g_main_logger.logError("Failed to establish a connection to the target device on port " + std::to_string(port_) +
+        Logger::getInstance()->logError("Failed to establish a connection to the target device on port " + std::to_string(port_) +
                                " and address " + std::string(ip_));
         exit(1);
     }
