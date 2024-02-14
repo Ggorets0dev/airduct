@@ -1,6 +1,7 @@
 #include <iostream>
 #include <getopt.h>
 #include <vector>
+#include <string>
 #include "project_info.h"
 #include "version.h"
 #include "filesystem.hpp"
@@ -23,11 +24,11 @@ void createConnectionProfile(char* profile_name)
 {
     // SECTION - Create required variables
     std::string address; address.reserve(15); // IPv4 length
-    std::string alias;
+    std::string details;
     int port;
     int buffer_size;
 
-    ConnectionProfile new_profile;
+    ConnectionProfile new_profile(profile_name);
     // !SECTION
 
     // SECTION - Collect values from console
@@ -42,14 +43,15 @@ void createConnectionProfile(char* profile_name)
     std::cout << "Device port: ";
     std::cin >> port;
 
-    if (!std::cin.fail())
-        new_profile.setPort(port);
-    else
+    if (std::cin.fail() || !new_profile.trySetPort(port))
         return Logger::getInstance()->logError("An incorrect value was entered for the port value when creating the profile");
 
-    std::cout << "Device alias: ";
-    std::cin >> alias;
-    new_profile.setAlias(alias);
+    std::cout << "Profile details: ";
+    std::cin.ignore();
+    std::getline(std::cin, details);
+
+    if (!new_profile.trySetDetails(details))
+        return Logger::getInstance()->logError("An incorrect value was entered for the details value when creating the profile");
 
     std::cout << "Connection buffer size: ";
     std::cin >> buffer_size;
@@ -61,6 +63,9 @@ void createConnectionProfile(char* profile_name)
     const std::string kFilename = std::string(profile_name) + ".json";
 
     new_profile.save(kFilename);
+
+    std::cout << "Following profile was created: " << std::endl;
+    new_profile.print();
 }
 
 void displayProfile(char* profile_name)
@@ -70,12 +75,25 @@ void displayProfile(char* profile_name)
     if (strcmp(profile_name, "all") == 0)
         profiles_filepaths = getFilePaths(ConnectionProfile::dir_path);
     else
-        profiles_filepaths.push_back(std::string(profile_name));
+        profiles_filepaths.push_back(profile_name);
 
     if (profiles_filepaths.empty())
     {
         std::cout << "No saved profiles are available" << std::endl;
         return;
+    }
+
+    for (auto& path : profiles_filepaths)
+    {
+        auto current = ConnectionProfile::readFile(path);
+
+        if (current != nullptr)
+            current->print();
+
+        else
+            std::cout << "Failed to open file " << path << std::endl;
+
+        std::cout << std::endl;
     }
 }
 
