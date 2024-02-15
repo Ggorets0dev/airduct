@@ -5,12 +5,14 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include "connection_profile_class.hpp"
 #include "logger_class.hpp"
 
 class WebClient
 {
 public:
     WebClient(const char* ip, int port, int buffer_size);
+    WebClient(const ConnectionProfile& profile);
     void testNet();
 
 private:

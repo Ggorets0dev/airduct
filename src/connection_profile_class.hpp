@@ -6,7 +6,7 @@
 #include <string>
 #include <cstdio>
 #include <fstream>
-#include <sys/stat.h>
+#include "filesystem.hpp"
 #include "logger_class.hpp"
 
 #define RAPIDJSON_HAS_STDSTRING 1
@@ -18,10 +18,11 @@
 class ConnectionProfile
 {
 public:
-    static std::string dir_path;
+    static const char* dir_path;
     const std::string name_;
 
     static std::shared_ptr<ConnectionProfile> readFile(const std::string& path);
+    static std::string createFilePath(const std::string& profile_name);
 
     ConnectionProfile(std::string name);
 
@@ -35,7 +36,7 @@ public:
     bool trySetPort(int port);
     bool trySetBufferSize(int buffer_size);
 
-    void save(const std::string& filename) const;
+    void save() const;
     void print() const;
 
 private:

@@ -35,4 +35,18 @@ std::vector<std::string> getFilePaths(const std::string& path)
     return filenames;
 }
 
+bool checkPathExist(const char* path)
+{
+    struct stat buffer;
+    return stat(path, &buffer) == 0;
+}
 
+bool createDirectory(const char* path)
+{
+    return mkdir(path, 0777) == 0;
+}
+
+bool removeFile(const char* path)
+{
+    return remove(path) == 0;
+}

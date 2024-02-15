@@ -2,6 +2,16 @@
 
 ConnectionProfile::ConnectionProfile(std::string name) : name_(name) {}
 
+std::string ConnectionProfile::createFilePath(const std::string& profile_name)
+{
+    std::string path = dir_path;
+    path += "/";
+    path += profile_name;
+    path += ".json";
+
+    return path;
+}
+
 std::shared_ptr<ConnectionProfile> ConnectionProfile::readFile(const std::string& path)
 {
     FILE* fp = fopen(path.c_str(), "rb");
@@ -84,6 +94,11 @@ bool ConnectionProfile::trySetDetails(const std::string& text)
         details_ = text;
         return true;
     }
+    else if (text.empty())
+    {
+        details_ = "Not provided";
+        return true;
+    }
     else
     {
         return false;
@@ -108,7 +123,7 @@ bool ConnectionProfile::trySetAddress(const std::string& text)
 bool ConnectionProfile::trySetBufferSize(int buffer_size)
 {
     const int min_size(100);
-    const int max_size(100000);
+    const int max_size(100'000);
 
     if (buffer_size > min_size && buffer_size < max_size)
     {
@@ -122,12 +137,10 @@ bool ConnectionProfile::trySetBufferSize(int buffer_size)
 
 }
 
-void ConnectionProfile::save(const std::string& filename) const
+void ConnectionProfile::save() const
 {
-    struct stat sb;
-
-    if (stat(dir_path.c_str(), &sb) != 0)
-        mkdir(dir_path.c_str(), 0777);
+    if (!checkPathExist(ConnectionProfile::dir_path))
+        createDirectory(ConnectionProfile::dir_path);
 
     rapidjson::Document profile;
     profile.SetObject();
@@ -140,7 +153,7 @@ void ConnectionProfile::save(const std::string& filename) const
     profile.AddMember("port", port_, alloc);
     profile.AddMember("buffer_size", buffer_size_, alloc);
 
-    const std::string kFilePath = dir_path + "/" + filename;
+    const std::string kFilePath = std::string(dir_path) + "/" + name_ + ".json";
     FILE* file = fopen(kFilePath.c_str(), "w");
 
     char writeBuffer[65536];

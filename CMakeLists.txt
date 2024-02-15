@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.5)
 
 project(airduct LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(airduct_VERSION "0.5.1")
+set(airduct_VERSION "0.6.0")
 
 include("${CMAKE_SOURCE_DIR}/vendor/rapidjson.cmake")
 

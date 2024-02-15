@@ -2,6 +2,13 @@
 
 WebClient::WebClient(const char* ip, int port, int buffer_size) : ip_(ip), port_(port), buffer_size_(buffer_size) {}
 
+WebClient::WebClient(const ConnectionProfile& profile)
+{
+    ip_ = profile.getAddress().c_str();
+    port_ = profile.getPort();
+    buffer_size_ = profile.getBufferSize();
+}
+
 bool WebClient::tryConnect(int& client, sockaddr_in& server_address) const
 {
     bool status = connect(client,
