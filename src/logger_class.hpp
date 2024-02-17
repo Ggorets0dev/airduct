@@ -13,9 +13,9 @@ public:
     void operator = (const Logger& other) = delete;
 
     Logger();
-    void logError(std::string text) const;
-    void logMessage(std::string text) const;
-    void logSuccess(std::string text) const;
+    void logError(const std::string&) const;
+    void logMessage(const std::string& text) const;
+    void logSuccess(const std::string& text) const;
 };
 
 #endif // LOGGER_HPP

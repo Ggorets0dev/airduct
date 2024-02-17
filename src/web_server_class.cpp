@@ -1,87 +1,59 @@
 #include "web_server_class.hpp"
 
-WebServer::WebServer(int port, int buffer_size) : port_(port), buffer_size_(buffer_size) {}
-
-bool WebServer::isCloseRequest(const char* msg)
+void WebServer::sendMessage(const std::string& text)
 {
-    for (std::size_t i(0); i < strlen(msg); ++i)
-        if (msg[i] == CLOSE_CONNECTION_SYMBOL)
-            return true;
-
-    return false;
-}
-
-void WebServer::testNet()
-{
+    std::string exception_text;
     int server, client;
-    sockaddr_in server_address;
 
     client = socket(AF_INET, SOCK_STREAM, 0);
 
     if (client < 0)
     {
-        std::cerr << "SERVER ERROR: Socket can't be established" << std::endl;
-        exit(1);
+        exception_text = "Failed to create a socket object before binding data to it";
+
+        Logger::getInstance()->logError(exception_text);
+        throw std::runtime_error(exception_text);
     }
 
-    std::cout << "Socket created" << std::endl;
+    Logger::getInstance()->logSuccess("A socket object was successfully created without binding data to it");
 
-    server_address.sin_port = htons(this->port_);
-    server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = htons(INADDR_ANY);
+    configureSocket();
 
-    int ret = bind(client, reinterpret_cast<sockaddr*>(&server_address), sizeof(server_address));
+    int bind_status = bind(client, reinterpret_cast<sockaddr*>(&target_address_), sizeof(target_address_));
 
-    if (ret < 0)
+    if (bind_status < 0)
     {
-        std::cerr << "SERVER ERROR: Failed binding connection" << std::endl;
-        exit(1);
+        exception_text = "Failed to assign a created socket in the operating system";
+
+        Logger::getInstance()->logError(exception_text);
+        throw std::runtime_error(exception_text);
     }
 
-    socklen_t size = sizeof(server_address);
-    std::cout << "Listening clients..." << std::endl;
-    listen(client, 1);
+    Logger::getInstance()->logSuccess("Socket has been successfully installed in the system and is ready for operation");
+    Logger::getInstance()->logMessage("A client is expected to connect to this device...");
 
-    server = accept(client, reinterpret_cast<sockaddr*>(&server_address), &size);
+    socklen_t size = sizeof(target_address_);
+    listen(client, 1);
+    server = accept(client, reinterpret_cast<sockaddr*>(&target_address_), &size);
 
     if (server < 0)
-        std::cout << "Can't accept client" << std::endl;
+    {
+        exception_text = "Failed to connect to the client that attempted the connection";
+
+        Logger::getInstance()->logError(exception_text);
+        throw std::runtime_error(exception_text);
+    }
 
     char buffer[this->buffer_size_];
-    bool is_exit = false;
+    strcpy(buffer, text.c_str());
 
-    while (server > 0)
-    {
-        strcpy(buffer, "=> Server connected!\n");
-        send(server, buffer, this->buffer_size_, 0);
-        std::cout << "=> Connected to the client #1" << std::endl;
+    send(server, buffer, this->buffer_size_, 0);
+    //recv(server, buffer, this->buffer_size_, 0);
+}
 
-        std::cout << "Client: ";
-        recv(server, buffer, this->buffer_size_, 0);
-        std::cout << buffer << std::endl;
-
-        if (isCloseRequest(buffer))
-            is_exit = true;
-
-        while (!is_exit)
-        {
-            std::cout << "Server: ";
-            std::cin.getline(buffer, this->buffer_size_);
-            send(server, buffer, this->buffer_size_, 0);
-
-            if (isCloseRequest(buffer))
-                break;
-
-            std::cout << "Client: ";
-            recv(server, buffer, this->buffer_size_, 0);
-            std::cout << buffer << std::endl;
-
-            if (isCloseRequest(buffer))
-                break;
-        }
-
-        std::cout << "Goodbye..." << std::endl;
-        is_exit = false;
-        exit(1);
-    }
+void WebServer::configureSocket()
+{
+    target_address_.sin_port = htons(port_);
+    target_address_.sin_family = AF_INET;
+    target_address_.sin_addr.s_addr = htons(INADDR_ANY);
 }

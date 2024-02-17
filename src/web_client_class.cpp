@@ -1,28 +1,28 @@
 #include "web_client_class.hpp"
 
-WebClient::WebClient(const char* ip, int port, int buffer_size) : ip_(ip), port_(port), buffer_size_(buffer_size) {}
-
-WebClient::WebClient(const ConnectionProfile& profile)
+WebClient::WebClient(const char* ip, int port, int buffer_size) : WebDevice(port, buffer_size)
 {
-    ip_ = profile.getAddress().c_str();
-    port_ = profile.getPort();
-    buffer_size_ = profile.getBufferSize();
+    ip_ = ip;
 }
 
-bool WebClient::tryConnect(int& client, sockaddr_in& server_address) const
+WebClient::WebClient(const ClientProfile& profile) : WebDevice(profile.getPort(), profile.getBufferSize())
+{
+    ip_ = profile.getAddress().c_str();
+}
+
+bool WebClient::tryConnect(int client) const
 {
     bool status = connect(client,
-                          reinterpret_cast<const sockaddr*>(&server_address),
-                          sizeof(server_address)) == 0;
+                          reinterpret_cast<const sockaddr*>(&target_address_),
+                          sizeof(target_address_)) == 0;
 
     return status;
 }
 
-void WebClient::testNet()
+std::string WebClient::getMessage()
 {
+    std::string exception_text;
     int client;
-
-    sockaddr_in server_address;
 
     client = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -32,38 +32,32 @@ void WebClient::testNet()
         exit(1);
     }
 
-    server_address.sin_port = htons(this->port_);
-    server_address.sin_family = AF_INET;
-    inet_pton(AF_INET, this->ip_, &server_address.sin_addr);
-    server_address.sin_addr.s_addr = htons(INADDR_ANY);
+    Logger::getInstance()->logSuccess("A socket object was successfully created without binding data to it");
 
-    std::cout << "Client socket created" << std::endl;
+    configureSocket();
 
-    if (!tryConnect(client, server_address))
+    if (!tryConnect(client))
     {
-        Logger::getInstance()->logError("Failed to establish a connection to the target device on port " + std::to_string(port_) +
-                               " and address " + std::string(ip_));
-        exit(1);
+        exception_text = "Failed to establish a connection to the target device";
+
+        Logger::getInstance()->logError(exception_text);
+        throw std::runtime_error(exception_text);
     }
 
-    std::cout << "Waiting for server confirmation..." << std::endl;
+    Logger::getInstance()->logSuccess("Сonnection to the target device has been successfully established");
+    Logger::getInstance()->logMessage("Data is expected from the target device...");
 
     char buffer[this->buffer_size_];
     recv(client, buffer, this->buffer_size_, 0);
 
-    std::cout << "=> Connection established" << std::endl;
-
-    while (true)
-    {
-        std::cout << "Client: ";
-        std::cin.getline(buffer, this->buffer_size_);
-
-        send(client, buffer, this->buffer_size_, 0);
-
-        std::cout << "Server: ";
-        recv(client, buffer, this->buffer_size_, 0);
-        std::cout << buffer << std::endl;
-    }
-
     close(client);
+}
+
+
+void WebClient::configureSocket()
+{
+    target_address_.sin_port = htons(port_);
+    target_address_.sin_family = AF_INET;
+    inet_pton(AF_INET, ip_, &target_address_.sin_addr);
+    target_address_.sin_addr.s_addr = htons(INADDR_ANY);
 }

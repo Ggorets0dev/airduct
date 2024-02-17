@@ -5,20 +5,17 @@
 #include <cstring>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include "logger_class.hpp"
+#include "web_device_class.hpp"
 
-class WebServer
+class WebServer final : public WebDevice
 {
 public:
-    WebServer(int port, int buffer_size);
-    void testNet();
+    WebServer(int port_, int buffer_size_) : WebDevice(port_, buffer_size_) {};
+    void sendMessage(const std::string& text);
 
-private:
-    static const int CLOSE_CONNECTION_SYMBOL = static_cast<int>('#');
-
-    int buffer_size_;
-    int port_;
-
-    bool isCloseRequest(const char* msg);
+protected:
+    void configureSocket() override;
 };
 
 #endif // SERVER_H

@@ -2,20 +2,24 @@
 #include <getopt.h>
 #include <vector>
 #include <string>
+#include <functional>
 #include "project_info.h"
 #include "version.h"
 #include "filesystem.hpp"
 #include "web_server_class.hpp"
 #include "web_client_class.hpp"
 #include "logger_class.hpp"
-#include "connection_profile_class.hpp"
+#include "client_profile_class.hpp"
+#include "server_profile_class.hpp"
 
 Logger* Logger::global_instance = nullptr;
-const char* ConnectionProfile::dir_path = "./profiles";
+const char* ClientProfile::dir_path = "./client_profiles";
+const char* ServerProfile::dir_path = "./server_profiles";
 
 const option longOptions[] = {
     { "version", no_argument, nullptr, 'v' },
     { "help", no_argument, nullptr, 'v' },
+    { "listen", no_argument, nullptr, 'v' },
     { "create", required_argument, nullptr, 'c' },
     { "show", required_argument, nullptr, 's' },
     { "execute", required_argument, nullptr, 'e' },
@@ -25,85 +29,59 @@ const option longOptions[] = {
     { nullptr, 0, nullptr, 0 }
 };
 
-void createProfile(const char* profile_name)
+// SECTION - Auxiliary functions for processing command line arguments
+void createProfile(const char* type)
 {
-    auto file_path = ConnectionProfile::createFilePath(profile_name);
+    bool isClient(false), isServer(false);
+    std::string profile_name;
+    ConnectionProfile* new_profile;
 
-    // SECTION - Check if profile already exists
-    if (checkPathExist(file_path.c_str()))
+    if (strcmp(type, "client") == 0)
+        isClient = true;
+    else if (strcmp(type, "server") == 0)
+        isServer = true;
+    else
+        return Logger::getInstance()->logError("No specified connection profile type exists"); 
+
+    std::cout << "Profile name: ";
+    std::cin >> profile_name;
+
+    try
     {
-        bool isExit(false);
-        char choice;
-        while(true)
+        if (isClient)
         {
-            std::cout << "A profile with this name already exists, if you continue, the data in it will be overwritten. Conitnue creating? [N-no/Y-yes]: ";
-            std::cin >> choice;
-
-            if (choice == 'n' || choice == 'N')
-                return Logger::getInstance()->logMessage("Profile creation process is stopped");
-            else if (choice == 'y' || choice == 'Y')
-                isExit = true;
-
-            std::cout << std::endl;
-
-            std::cin.ignore();
-
-            if (isExit)
-                break;
+            new_profile = new ClientProfile(profile_name);
+            new_profile->fillFromCin();
+        }
+        else
+        {
+            new_profile = new ServerProfile(profile_name);
+            new_profile->fillFromCin();
         }
     }
-    // !SECTION
+    catch (std::runtime_error&)
+    {
+        delete new_profile;
+        return Logger::getInstance()->logError("Failed to complete profile fields due to incorrectly entered values");
+    }
 
-    // SECTION - Create required variables
-    std::string buffer_string; buffer_string.reserve(15); // IPv4 length
-    int buffer_integer;
-
-    ConnectionProfile new_profile(profile_name);
-    // !SECTION
-
-    // SECTION - Collect values from console
-    std::cout << "Fill in the following profile information..." << std::endl;
-
-    std::cout << "Device IPv4 address: ";
-    std::cin >> buffer_string;
-
-    if (!new_profile.trySetAddress(buffer_string))
-        return Logger::getInstance()->logError("IPv4 format of the device address is not respected ");
-
-    std::cout << "Device port: ";
-    std::cin >> buffer_integer;
-
-    if (std::cin.fail() || !new_profile.trySetPort(buffer_integer))
-        return Logger::getInstance()->logError("An incorrect value was entered for the port value when creating the profile");
-
-    std::cout << "Profile details: ";
-    std::cin.ignore();
-    std::getline(std::cin, buffer_string);
-
-    if (!new_profile.trySetDetails(buffer_string))
-        return Logger::getInstance()->logError("An incorrect value was entered for the details value when creating the profile");
-
-    std::cout << "Connection buffer size: ";
-    std::cin >> buffer_integer;
-
-    if (std::cin.fail() || !new_profile.trySetBufferSize(buffer_integer))
-        return Logger::getInstance()->logError("An incorrect value was entered for the buffer size value when creating the profile");
-    // !SECTION
-
-    new_profile.save();
+    new_profile->save();
 
     std::cout << "Following profile was created: " << std::endl;
-    new_profile.print();
+    new_profile->print();
+
+    delete new_profile;
 }
 
 void removeProfile(const char* profile_name)
 {
-    std::string file_path = ConnectionProfile::dir_path;
-    file_path += "/";
-    file_path += profile_name;
-    file_path += ".json";
+    std::string server_profile_path = ServerProfile::getFilePath(profile_name);
+    std::string client_profile_path = ClientProfile::getFilePath(profile_name);
 
-    if (checkPathExist(file_path.c_str()) && removeFile(file_path.c_str()))
+    bool is_deleted_as_server = checkPathExist(server_profile_path.c_str()) && removeFile(server_profile_path.c_str());
+    bool is_deleted_as_client = checkPathExist(client_profile_path.c_str()) && removeFile(client_profile_path.c_str());
+
+    if (is_deleted_as_server || is_deleted_as_client)
         Logger::getInstance()->logSuccess("Successfully deleted profile on path " + std::string(profile_name));
     else
         Logger::getInstance()->logError("Failed to delete the profile on path " + std::string(profile_name) + " due to its unavailability or an error in operation");
@@ -111,33 +89,68 @@ void removeProfile(const char* profile_name)
 
 void displayProfile(const char* profile_name)
 {
-    std::vector<std::string> profiles_paths;
+    std::vector<std::string> client_paths;
+    std::vector<std::string> server_paths;
 
     if (strcmp(profile_name, "all") == 0)
-        profiles_paths = getFilePaths(ConnectionProfile::dir_path);
+    {
+        client_paths = getFilePaths(ClientProfile::dir_path);
+        server_paths = getFilePaths(ServerProfile::dir_path);
+    }
+    else if (strcmp(profile_name, "client") == 0)
+    {
+        client_paths = getFilePaths(ClientProfile::dir_path);
+    }
+    else if (strcmp(profile_name, "server") == 0)
+    {
+        server_paths = getFilePaths(ServerProfile::dir_path);
+    }
     else
-        profiles_paths.push_back(profile_name);
-
-    if (profiles_paths.empty())
     {
-        std::cout << "No saved profiles are available" << std::endl;
-        return;
+        auto cl_path = ClientProfile::getFilePath(profile_name);
+        auto se_path = ServerProfile::getFilePath(profile_name);
+
+        if (checkPathExist(cl_path.c_str()))
+            client_paths.push_back(cl_path);
+        else if (checkPathExist(se_path.c_str()))
+            server_paths.push_back(cl_path);
     }
 
-    for (auto& path : profiles_paths)
+    if (client_paths.empty() && server_paths.empty())
+        return Logger::getInstance()->logError("Profiles cannot be displayed because they do exist");
+
+    // SECTION - Function for showing results
+    using StringArray = std::vector<std::string>;
+    using SharedPtr = std::shared_ptr<ConnectionProfile>;
+
+    auto show = [](StringArray& paths, std::function<SharedPtr(const std::string& path)> create)
     {
-        auto current = ConnectionProfile::readFile(path);
+        for (auto iter = paths.cbegin(); iter != paths.cend(); ++iter)
+        {
+            auto elem = create(*iter);
 
-        if (current != nullptr)
-            current->print();
+            if (elem != nullptr)
+            {
+                elem->print();
 
+                if (iter != paths.cend() - 1)
+                    std::cout << std::endl;
+            }
+        }
+    };
+    // !SECTION
+
+    show(client_paths, ClientProfile::createFromFile);
+
+    if (!client_paths.empty())
         std::cout << std::endl;
-    }
+
+    show(server_paths, ServerProfile::createFromFile);
 }
 
-std::shared_ptr<ConnectionProfile> collectProfile(const std::string& profile_name)
+std::shared_ptr<ClientProfile> collectProfile(const std::string& profile_name)
 {
-    std::string profile_path = ConnectionProfile::createFilePath(profile_name);
+    std::string profile_path;
 
     if (!checkPathExist(profile_path.c_str()))
     {
@@ -145,10 +158,10 @@ std::shared_ptr<ConnectionProfile> collectProfile(const std::string& profile_nam
         return nullptr;
     }
 
-    return ConnectionProfile::readFile(profile_path);
+    return nullptr;
 }
 
-std::shared_ptr<ConnectionProfile> parseConnectionSettings(const char* connection_settings)
+std::shared_ptr<ClientProfile> parseConnectionSettings(const char* connection_settings)
 {
     const std::string params = connection_settings; // format is "address:port@buffer_size"
 
@@ -161,7 +174,7 @@ std::shared_ptr<ConnectionProfile> parseConnectionSettings(const char* connectio
         return nullptr;
     }
 
-    auto profile = std::make_shared<ConnectionProfile>("TEMP");
+    auto profile = std::make_shared<ClientProfile>("TEMP");
 
     try
     {
@@ -196,21 +209,35 @@ void printSoftwareInformation()
     std::cout << "License: " << g_license << std::endl;
 }
 
+void printHelp()
+{
+
+}
+// !SECTION
+
 int main(int argc, char** argv)
 {
     std::unique_ptr<WebClient> web_client;
     std::unique_ptr<WebServer> web_server;
-    std::shared_ptr<ConnectionProfile> profile;
 
-    std::string buffer;
+    int port;
+    std::shared_ptr<ClientProfile> client_profile;
+    std::shared_ptr<ServerProfile> server_profile;
+    std::string command;
 
-    bool isExecuteCalled(false), isDestinationSet(false), isProfileSet(false);
+    std::string buffer; // For different operations in switch-case statement
+
+    bool isExecuteCalled(false), isListenCalled(false), isDestinationSet(false), isProfileSet(false);
 
     int option, optinx;
-    while ((option = getopt_long(argc, argv, "e:d:c:r:s:p:vh", longOptions, &optinx)) != -1)
+    while ((option = getopt_long(argc, argv, "e:d:c:r:s:p:vhl", longOptions, &optinx)) != -1)
     {
         switch (option)
         {
+        case 'h':
+            printHelp();
+            break;
+
         case 'v':
             printSoftwareInformation();
             break;
@@ -227,13 +254,22 @@ int main(int argc, char** argv)
             displayProfile(optarg);
             break;
 
+        case 'e':
+            command = optarg;
+            isExecuteCalled = true;
+            break;
+
+        case 'l':
+            isListenCalled = true;
+            break;
+
         case 'p':
             buffer = optarg; // Saving profile name
-            profile = collectProfile(buffer);
+            client_profile = collectProfile(buffer);
 
-            if (profile != nullptr)
+            if (client_profile != nullptr)
             {
-                web_client = std::make_unique<WebClient>(*profile);
+                web_client = std::make_unique<WebClient>(*client_profile);
                 isProfileSet = true;
                 Logger::getInstance()->logSuccess("Connection profile with name " + buffer + " is successfully obtained");
             }
@@ -244,17 +280,28 @@ int main(int argc, char** argv)
             break;
 
         case 'd':
-            profile = parseConnectionSettings(optarg);
-
-            if (profile != nullptr)
+            if (isListenCalled) // NOTE - Requires assignment of connection settings for the connection
             {
-                web_client = std::make_unique<WebClient>(*profile);
-                isDestinationSet = true;
-                Logger::getInstance()->logSuccess("Settings string has been successfully processed and a temporary connection profile has been created");
+                client_profile = parseConnectionSettings(optarg);
+
+                if (client_profile != nullptr)
+                {
+                    web_client = std::make_unique<WebClient>(*client_profile);
+                    isDestinationSet = true;
+                    Logger::getInstance()->logSuccess("Settings string has been successfully processed and a temporary connection profile has been created");
+                }
+                else
+                {
+                    Logger::getInstance()->logError("Unable to continue profile creation due to arguments read error");
+                }
+            }
+            else if (isExecuteCalled) // NOTE - Requires port definition for server creation
+            {
+                port = atoi(optarg);
             }
             else
             {
-                Logger::getInstance()->logError("Unable to continue profile creation due to arguments read error");
+                Logger::getInstance()->logError("Operation for which the assignment is to be set is not defined");
             }
             break;
 
@@ -263,6 +310,24 @@ int main(int argc, char** argv)
             return 1;
         }
     }
+
+    // SECTION - Processing listen (recieve) operation
+    if (isListenCalled && (isProfileSet || isDestinationSet))
+    {
+
+    }
+    else if (isListenCalled)
+    {
+        Logger::getInstance()->logError("To listen transfered data, you must either select a connection profile or specify the settings manually");
+    }
+    // !SECTION
+
+    // SECTION - Processing execute (send) operation
+    if (isExecuteCalled)
+    {
+        //web_server = std::make_unique<WebServer>();
+    }
+    // !SECTION
 
     return 0;
 }

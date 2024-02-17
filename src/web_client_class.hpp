@@ -5,22 +5,22 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include "connection_profile_class.hpp"
+#include "client_profile_class.hpp"
 #include "logger_class.hpp"
+#include "web_device_class.hpp"
 
-class WebClient
+class WebClient final : public WebDevice
 {
 public:
     WebClient(const char* ip, int port, int buffer_size);
-    WebClient(const ConnectionProfile& profile);
-    void testNet();
+    WebClient(const ClientProfile& profile);
+    std::string getMessage();
 
 private:
     const char* ip_;
-    int port_;
-    int buffer_size_;
 
-    bool tryConnect(int& client, sockaddr_in& server_address) const;
+    void configureSocket() override;
+    bool tryConnect(int client) const;
 };
 
 #endif // WEBCLIENTCLASS_HPP

@@ -9,38 +9,29 @@
 #include "filesystem.hpp"
 #include "logger_class.hpp"
 
-#define RAPIDJSON_HAS_STDSTRING 1
 #include "rapidjson/document.h"
-#include "rapidjson/filewritestream.h"
-#include "rapidjson/filereadstream.h"
-#include "rapidjson/writer.h"
 
 class ConnectionProfile
 {
 public:
-    static const char* dir_path;
     const std::string name_;
 
-    static std::shared_ptr<ConnectionProfile> readFile(const std::string& path);
-    static std::string createFilePath(const std::string& profile_name);
+    ConnectionProfile(const std::string& name);
+    virtual ~ConnectionProfile() {};
 
-    ConnectionProfile(std::string name);
-
-    std::string getAddress() const  { return address_; };
-    std::string getDetails() const    { return details_; };
     int getPort() const             { return port_; };
     int getBufferSize() const       { return buffer_size_; };
+    std::string getDetails() const  { return details_; };
 
-    bool trySetAddress(const std::string& text);
-    bool trySetDetails(const std::string& text);
     bool trySetPort(int port);
     bool trySetBufferSize(int buffer_size);
+    bool trySetDetails(const std::string& text);
 
-    void save() const;
-    void print() const;
+    virtual void fillFromCin();
+    virtual void save() const = 0;
+    virtual void print() const = 0;
 
-private:
-    std::string address_;
+protected:
     std::string details_;
     int port_;
     int buffer_size_;

@@ -10,19 +10,19 @@ Logger* Logger::getInstance()
     return global_instance;
 }
 
-void Logger::logError(std::string text) const
+void Logger::logError(const std::string& text) const
 {
     std::cerr << "[-] ";
     std::cerr << text << std::endl;
 }
 
-void Logger::logMessage(std::string text) const
+void Logger::logMessage(const std::string& text) const
 {
     std::clog << "[/] ";
     std::clog << text << std::endl;
 }
 
-void Logger::logSuccess(std::string text) const
+void Logger::logSuccess(const std::string& text) const
 {
     std::clog << "[+] ";
     std::clog << text << std::endl;
