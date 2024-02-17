@@ -74,3 +74,20 @@ void ConnectionProfile::fillFromCin()
     if (!trySetDetails(buffer_string))
         throw std::runtime_error("Details could not be set, value does not meet requirements");
 }
+
+void ConnectionProfile::fillFromString(const std::string& text)
+{
+    std::size_t slash_inx = text.find('/');
+
+    if (slash_inx == std::string::npos)
+        throw std::invalid_argument("Data cannot be processed because the format is not followed");
+
+    int port = std::stoi(std::string(text.cbegin(), text.cbegin() + slash_inx));
+    int buffer_size = std::stoi(std::string(text.cbegin() + slash_inx + 1, text.cend()));
+
+    if (!trySetPort(port))
+        throw std::invalid_argument("Port could not be set, value does not meet requirements");
+
+    if (!trySetBufferSize(buffer_size))
+        throw std::invalid_argument("Buffer size could not be set, value does not meet requirements");
+}

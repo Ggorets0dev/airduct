@@ -27,22 +27,14 @@ std::string WebClient::getMessage()
     client = socket(AF_INET, SOCK_STREAM, 0);
 
     if (client < 0)
-    {
-        std::cerr << "CLIENT ERROR: Failed to create a socket" << std::endl;
-        exit(1);
-    }
+        throw std::runtime_error("Failed to create socket without binding data");
 
     Logger::getInstance()->logSuccess("A socket object was successfully created without binding data to it");
 
     configureSocket();
 
     if (!tryConnect(client))
-    {
-        exception_text = "Failed to establish a connection to the target device";
-
-        Logger::getInstance()->logError(exception_text);
-        throw std::runtime_error(exception_text);
-    }
+        throw std::runtime_error("Failed to establish a connection to the target device");
 
     Logger::getInstance()->logSuccess("Сonnection to the target device has been successfully established");
     Logger::getInstance()->logMessage("Data is expected from the target device...");

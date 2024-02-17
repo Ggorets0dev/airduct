@@ -18,6 +18,7 @@ public:
     std::string getAddress() const  { return address_; };
     bool trySetAddress(const std::string& text);
 
+    void fillFromString(const std::string& text) override;
     void fillFromCin() override;
     void save() const override;
     void print() const override;

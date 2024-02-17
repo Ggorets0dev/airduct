@@ -18,8 +18,8 @@ const char* ServerProfile::dir_path = "./server_profiles";
 
 const option longOptions[] = {
     { "version", no_argument, nullptr, 'v' },
-    { "help", no_argument, nullptr, 'v' },
-    { "listen", no_argument, nullptr, 'v' },
+    { "help", no_argument, nullptr, 'h' },
+    { "listen", no_argument, nullptr, 'l' },
     { "create", required_argument, nullptr, 'c' },
     { "show", required_argument, nullptr, 's' },
     { "execute", required_argument, nullptr, 'e' },
@@ -142,61 +142,56 @@ void displayProfile(const char* profile_name)
 
     show(client_paths, ClientProfile::createFromFile);
 
-    if (!client_paths.empty())
+    if (!client_paths.empty() && !server_paths.empty())
         std::cout << std::endl;
 
     show(server_paths, ServerProfile::createFromFile);
 }
 
-std::shared_ptr<ClientProfile> collectProfile(const std::string& profile_name)
+std::shared_ptr<ConnectionProfile> collectProfile(const std::string& profile_name)
 {
-    std::string profile_path;
+    auto client_path = ClientProfile::getFilePath(profile_name);
+    auto server_path = ServerProfile::getFilePath(profile_name);
 
-    if (!checkPathExist(profile_path.c_str()))
+    if (checkPathExist(client_path.c_str()))
     {
-        Logger::getInstance()->logError("Failed to locate the requested profile on the intended path " + profile_path);
+        return ClientProfile::createFromFile(client_path);
+    }
+    else if (checkPathExist(server_path.c_str()))
+    {
+        return ClientProfile::createFromFile(server_path);
+    }
+    else
+    {
+        Logger::getInstance()->logError("Failed to locate the requested profile");
         return nullptr;
     }
 
     return nullptr;
 }
 
-std::shared_ptr<ClientProfile> parseConnectionSettings(const char* connection_settings)
+std::shared_ptr<ConnectionProfile> parseConnectionSettings(const std::string& params)
 {
-    const std::string params = connection_settings; // format is "address:port@buffer_size"
-
-    std::size_t colon_inx = params.find(':');
-    std::size_t ad_inx = params.find('@');
-
-    if (colon_inx == std::string::npos || ad_inx == std::string::npos)
-    {
-        Logger::getInstance()->logError("Unable to process connection settings due to format mismatch");
-        return nullptr;
-    }
-
-    auto profile = std::make_shared<ClientProfile>("TEMP");
+    std::shared_ptr<ConnectionProfile> profile = std::make_shared<ClientProfile>("TEMP");
 
     try
     {
-        std::string address = std::string(params.cbegin(), params.cbegin() + colon_inx);
-        int port = std::stoi(std::string(params.cbegin() + colon_inx + 1, params.cbegin() + ad_inx));
-        int buffer_size = std::stoi(std::string(params.cbegin() + ad_inx + 1, params.cend()));
-
-         if (profile.get()->trySetAddress(address) &&
-                 profile.get()->trySetPort(port) &&
-                 profile.get()->trySetBufferSize(buffer_size))
-         {
-             return profile;
-         }
-         else
-         {
-             Logger::getInstance()->logError("Failed to assign one of the parameters for the connection profile");
-             return nullptr;
-         }
+        profile->fillFromString(params);
+        return profile;
     }
-    catch (std::invalid_argument)
+    catch (std::invalid_argument&)
     {
-        Logger::getInstance()->logError("Failed to convert part of the transferred connection settings");
+        profile.reset(new ServerProfile("TEMP"));
+    }
+
+    try
+    {
+        profile->fillFromString(params);
+        return profile;
+    }
+    catch (std::invalid_argument&)
+    {
+        Logger::getInstance()->logError("Failed to process the settings string and bring it to any profile due to format non-compliance");
         return nullptr;
     }
 }
@@ -217,15 +212,10 @@ void printHelp()
 
 int main(int argc, char** argv)
 {
-    std::unique_ptr<WebClient> web_client;
-    std::unique_ptr<WebServer> web_server;
-
-    int port;
-    std::shared_ptr<ClientProfile> client_profile;
-    std::shared_ptr<ServerProfile> server_profile;
+    std::shared_ptr<ConnectionProfile> profile;
     std::string command;
 
-    std::string buffer; // For different operations in switch-case statement
+    std::string buffer; // NOTE - For different operations in switch-case statement
 
     bool isExecuteCalled(false), isListenCalled(false), isDestinationSet(false), isProfileSet(false);
 
@@ -264,45 +254,23 @@ int main(int argc, char** argv)
             break;
 
         case 'p':
-            buffer = optarg; // Saving profile name
-            client_profile = collectProfile(buffer);
+            profile = collectProfile(optarg);
 
-            if (client_profile != nullptr)
-            {
-                web_client = std::make_unique<WebClient>(*client_profile);
+            if (profile != nullptr)
                 isProfileSet = true;
-                Logger::getInstance()->logSuccess("Connection profile with name " + buffer + " is successfully obtained");
-            }
             else
-            {
                 Logger::getInstance()->logError("Unable to continue profile assignment due to file read error");
-            }
+
             break;
 
         case 'd':
-            if (isListenCalled) // NOTE - Requires assignment of connection settings for the connection
-            {
-                client_profile = parseConnectionSettings(optarg);
+            profile = parseConnectionSettings(optarg);
 
-                if (client_profile != nullptr)
-                {
-                    web_client = std::make_unique<WebClient>(*client_profile);
-                    isDestinationSet = true;
-                    Logger::getInstance()->logSuccess("Settings string has been successfully processed and a temporary connection profile has been created");
-                }
-                else
-                {
-                    Logger::getInstance()->logError("Unable to continue profile creation due to arguments read error");
-                }
-            }
-            else if (isExecuteCalled) // NOTE - Requires port definition for server creation
-            {
-                port = atoi(optarg);
-            }
+            if (profile != nullptr)
+                isDestinationSet = true;
             else
-            {
-                Logger::getInstance()->logError("Operation for which the assignment is to be set is not defined");
-            }
+                Logger::getInstance()->logError("Unable to continue profile creation due to arguments read error");
+
             break;
 
         default:
@@ -314,7 +282,25 @@ int main(int argc, char** argv)
     // SECTION - Processing listen (recieve) operation
     if (isListenCalled && (isProfileSet || isDestinationSet))
     {
+        auto client_profile = std::dynamic_pointer_cast<ClientProfile>(profile);
 
+        if (client_profile == nullptr)
+        {
+            Logger::getInstance()->logError("Type of operation does not match the specified profile");
+            return 1;
+        }
+
+        auto web_client = std::make_unique<WebClient>(*client_profile);
+
+        try
+        {
+            auto message = web_client->getMessage();
+            std::cout << message << std::endl;
+        }
+        catch(std::runtime_error& error)
+        {
+            Logger::getInstance()->logError(error.what());
+        }
     }
     else if (isListenCalled)
     {
@@ -323,9 +309,31 @@ int main(int argc, char** argv)
     // !SECTION
 
     // SECTION - Processing execute (send) operation
-    if (isExecuteCalled)
+    if (isExecuteCalled && (isProfileSet || isDestinationSet))
     {
-        //web_server = std::make_unique<WebServer>();
+        auto server_profile = std::dynamic_pointer_cast<ServerProfile>(profile);
+
+        if (server_profile == nullptr)
+        {
+            Logger::getInstance()->logError("Type of operation does not match the specified profile");
+            return 1;
+        }
+
+        auto web_server = std::make_unique<WebServer>(*server_profile);
+
+        try
+        {
+            web_server->sendMessage(command);
+            Logger::getInstance()->logSuccess("Message successfully sent to the connected client");
+        }
+        catch (std::runtime_error& error)
+        {
+            Logger::getInstance()->logError(error.what());
+        }
+    }
+    else if (isExecuteCalled)
+    {
+        Logger::getInstance()->logError("To transfer data, you must either select a connection profile or specify the settings manually");
     }
     // !SECTION
 

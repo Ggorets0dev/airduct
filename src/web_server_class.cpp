@@ -8,12 +8,7 @@ void WebServer::sendMessage(const std::string& text)
     client = socket(AF_INET, SOCK_STREAM, 0);
 
     if (client < 0)
-    {
-        exception_text = "Failed to create a socket object before binding data to it";
-
-        Logger::getInstance()->logError(exception_text);
-        throw std::runtime_error(exception_text);
-    }
+        throw std::runtime_error("Failed to create a socket object before binding data to it");
 
     Logger::getInstance()->logSuccess("A socket object was successfully created without binding data to it");
 
@@ -22,12 +17,7 @@ void WebServer::sendMessage(const std::string& text)
     int bind_status = bind(client, reinterpret_cast<sockaddr*>(&target_address_), sizeof(target_address_));
 
     if (bind_status < 0)
-    {
-        exception_text = "Failed to assign a created socket in the operating system";
-
-        Logger::getInstance()->logError(exception_text);
-        throw std::runtime_error(exception_text);
-    }
+        throw std::runtime_error("Failed to assign a created socket in the operating system");
 
     Logger::getInstance()->logSuccess("Socket has been successfully installed in the system and is ready for operation");
     Logger::getInstance()->logMessage("A client is expected to connect to this device...");
@@ -37,12 +27,7 @@ void WebServer::sendMessage(const std::string& text)
     server = accept(client, reinterpret_cast<sockaddr*>(&target_address_), &size);
 
     if (server < 0)
-    {
-        exception_text = "Failed to connect to the client that attempted the connection";
-
-        Logger::getInstance()->logError(exception_text);
-        throw std::runtime_error(exception_text);
-    }
+        throw std::runtime_error("Failed to connect to the client that attempted the connection");
 
     char buffer[this->buffer_size_];
     strcpy(buffer, text.c_str());

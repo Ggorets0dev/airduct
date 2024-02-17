@@ -113,3 +113,18 @@ void ClientProfile::fillFromCin()
 
     ConnectionProfile::fillFromCin();
 }
+
+void ClientProfile::fillFromString(const std::string &text)
+{
+    std::size_t colon_inx = text.find(':');
+
+    if (colon_inx == std::string::npos || colon_inx > text.size())
+        throw std::invalid_argument("Data cannot be processed because the format is not followed");
+
+    std::string address = std::string(text.cbegin(), text.cbegin() + colon_inx);
+
+    if (!trySetAddress(address))
+        throw std::invalid_argument("Address could not be set, value does not meet requirements");
+
+    ConnectionProfile::fillFromString(text.substr(colon_inx + 1, text.size() - colon_inx));
+}

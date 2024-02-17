@@ -27,6 +27,7 @@ public:
     bool trySetBufferSize(int buffer_size);
     bool trySetDetails(const std::string& text);
 
+    virtual void fillFromString(const std::string& text);
     virtual void fillFromCin();
     virtual void save() const = 0;
     virtual void print() const = 0;
