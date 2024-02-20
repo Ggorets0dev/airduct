@@ -115,12 +115,11 @@ std::string executeCommand(const char* cmd)
     {
         throw std::runtime_error("Failed to open pipe to execute command");
     }
+
     while (!feof(pipe))
     {
         if (fgets(buffer, 128, pipe) != nullptr)
-        {
             result += buffer;
-        }
     }
 
     pclose(pipe);

@@ -37,11 +37,6 @@ void printSoftwareInformation()
     std::cout << "License: " << g_license << std::endl;
 }
 
-void printHelp()
-{
-
-}
-
 int main(int argc, char** argv)
 {
     std::shared_ptr<ConnectionProfile> profile;
@@ -79,8 +74,15 @@ int main(int argc, char** argv)
             break;
 
         case 'e':
-            command = optarg;
-            isExecuteCalled = true;
+            if (strlen(optarg) != 0)
+            {
+                command = optarg;
+                isExecuteCalled = true;
+            }
+            else
+            {
+                Logger::getInstance()->logError("Failed to save a console command that does not meet the requirements");
+            }
             break;
 
         case 't':
@@ -166,8 +168,13 @@ int main(int argc, char** argv)
 
             try
             {
-                std::cout << web_client->getMessage() << std::endl;
-                Logger::getInstance()->logSuccess("Message successfully recieved from server");
+                std::string raw_command = web_client->getMessage();
+                Logger::getInstance()->logSuccess("Message successfully recieved from server and processed by the requested command");
+
+                raw_command = "echo \"" + raw_command + "\" | " + std::string(command);
+
+                std::cout << "Command has been processed and has the following output:" << std::endl;
+                std::cout << executeCommand(raw_command.c_str()) << std::endl;
             }
             catch (std::runtime_error& error)
             {

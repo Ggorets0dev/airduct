@@ -1,5 +1,36 @@
 #include "main_controllers.h"
 
+void printHelp()
+{
+    std::cout << "Available commands for AirDuct:" << std::endl;
+
+    std::string buffer = "--version, -v [Display version and other software information]\n";
+    buffer += "--help, -h [Display available commands for software]\n";
+    buffer += "--create, -c <client | server> [Create a new profile for this direction]\n";
+    buffer += "--show, -s <all | server | client | PROFILE_NAME> [Display profiles belonging to a specific category or one specific one]\n";
+    buffer += "--execute, -e <COMMAND> [Execute the command either as a source (send mode) or as a post-processing (receive mode) command]\n";
+    buffer += "--remove, -r <all | server | client | PROFILE_NAME> [Delete either all profiles from a category or one specific one]\n";
+    buffer += "--destination, -d <SETTINGS_STRING> [Set connection settings without profile (one-time)]\n";
+    buffer += "--profile, -p <PROFILE_NAME> [Select a profile by name to use in the connection]\n";
+    buffer += "--transmit, -t [Select the data transfer mode]\n";
+    buffer += "--obtain, -o [Select the data recieve mode]";
+
+    std::cout << buffer << std::endl;
+    std::cout << std::endl;
+    std::cout << "Format of connection settings:" << std::endl;
+
+    buffer = "Client: IP:PORT/BUFFER_SIZE\n";
+    buffer += "Server: PORT/BUFFER_SIZE";
+
+    std::cout << buffer << std::endl;
+    std::cout << std::endl;
+    std::cout << "Additional information:" << std::endl;
+
+    buffer = "*Buffer size* - Number of characters to be transmitted/received, choosing a number with a margin will slightly increase memory consumption but guarantees data integrity";
+
+    std::cout << buffer << std::endl;
+}
+
 void createProfile(const char* type)
 {
     bool isClient(false), isServer(false);

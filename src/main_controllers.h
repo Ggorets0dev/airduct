@@ -9,6 +9,8 @@
 #include "server_profile_class.hpp"
 
 // SECTION - Auxiliary functions for processing command line arguments
+void printHelp();
+
 void createProfile(const char* type);
 
 void removeProfile(const char* profile_name);
