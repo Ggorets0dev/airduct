@@ -43,6 +43,8 @@ std::string WebClient::getMessage()
     recv(client, buffer, this->buffer_size_, 0);
 
     close(client);
+
+    return std::string(buffer);
 }
 
 

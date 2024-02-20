@@ -21,7 +21,7 @@ std::vector<std::string> getFileNames(const std::string &path)
     }
     else
     {
-        Logger::getInstance()->logError("Failed to open the folder " + path + " where the profiles should be located");
+        Logger::getInstance()->logError("Failed to open the folder " + path + " for reading filenames");
     }
 
     return filenames;
@@ -49,6 +49,16 @@ bool createDirectory(const char* path)
 bool removeFile(const char* path)
 {
     return remove(path) == 0;
+}
+
+bool removeDirFiles(const char* dir_path)
+{
+    bool status(true);
+
+    for (auto& elem: getFilePaths(dir_path))
+        status *= removeFile(elem.c_str());
+
+    return status;
 }
 
 void saveJson(const rapidjson::Document& document, const std::string& path)
@@ -92,4 +102,27 @@ std::shared_ptr<rapidjson::Document> readJson(const std::string& path)
 
     fclose(fp);
     return profile_file;
+}
+
+std::string executeCommand(const char* cmd)
+{
+    char buffer[128];
+
+    std::string result = "";
+    FILE* pipe = popen(cmd, "r");
+
+    if (!pipe)
+    {
+        throw std::runtime_error("Failed to open pipe to execute command");
+    }
+    while (!feof(pipe))
+    {
+        if (fgets(buffer, 128, pipe) != nullptr)
+        {
+            result += buffer;
+        }
+    }
+
+    pclose(pipe);
+    return result;
 }

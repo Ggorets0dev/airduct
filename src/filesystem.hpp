@@ -26,8 +26,12 @@ bool createDirectory(const char* path);
 
 bool removeFile(const char* path);
 
+bool removeDirFiles(const char* dir_path);
+
 void saveJson(const rapidjson::Document& doc, const std::string& path);
 
 std::shared_ptr<rapidjson::Document> readJson(const std::string& path);
+
+std::string executeCommand(const char* cmd);
 
 #endif // FILESYSTEM_H
