@@ -1,6 +1,6 @@
 #include "filesystem.hpp"
 
-std::vector<std::string> getFileNames(const std::string &path)
+std::vector<std::string> filesystem::getFileNames(const std::string &path)
 {
     std::vector<std::string> filenames;
 
@@ -27,41 +27,41 @@ std::vector<std::string> getFileNames(const std::string &path)
     return filenames;
 }
 
-std::vector<std::string> getFilePaths(const std::string& path)
+std::vector<std::string> filesystem::getFilePaths(const std::string& path)
 {
-    auto filenames = getFileNames(path);
+    auto filenames = filesystem::getFileNames(path);
     std::for_each(filenames.begin(), filenames.end(), [path](std::string& elem) { elem = path + "/" + elem; });
 
     return filenames;
 }
 
-bool checkPathExist(const char* path)
+bool filesystem::checkPathExist(const char* path)
 {
     struct stat buffer;
     return stat(path, &buffer) == 0;
 }
 
-bool createDirectory(const char* path)
+bool filesystem::createDirectory(const char* path)
 {
     return mkdir(path, 0777) == 0;
 }
 
-bool removeFile(const char* path)
+bool filesystem::removeFile(const char* path)
 {
     return remove(path) == 0;
 }
 
-bool removeDirFiles(const char* dir_path)
+bool filesystem::removeDirFiles(const char* path)
 {
     bool status(true);
 
-    for (auto& elem: getFilePaths(dir_path))
+    for (auto& elem: filesystem::getFilePaths(path))
         status *= removeFile(elem.c_str());
 
     return status;
 }
 
-void saveJson(const rapidjson::Document& document, const std::string& path)
+void filesystem::saveJson(const rapidjson::Document& document, const std::string& path)
 {
     FILE* file = fopen(path.c_str(), "w");
 
@@ -73,7 +73,7 @@ void saveJson(const rapidjson::Document& document, const std::string& path)
     fclose(file);
 }
 
-std::shared_ptr<rapidjson::Document> readJson(const std::string& path)
+std::shared_ptr<rapidjson::Document> filesystem::readJson(const std::string& path)
 {
     FILE* fp = fopen(path.c_str(), "rb");
 
@@ -104,7 +104,7 @@ std::shared_ptr<rapidjson::Document> readJson(const std::string& path)
     return profile_file;
 }
 
-std::string executeCommand(const char* cmd)
+std::string filesystem::executeCommand(const char* cmd)
 {
     char buffer[128];
 

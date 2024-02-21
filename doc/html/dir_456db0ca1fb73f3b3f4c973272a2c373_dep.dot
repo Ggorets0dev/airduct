@@ -1,0 +1,9 @@
+digraph "build/vendor/rapidjson/src/rapidjson/include/rapidjson/error" {
+  compound=true
+  node [ fontsize="10", fontname="Helvetica"];
+  edge [ labelfontsize="10", labelfontname="Helvetica"];
+  subgraph clusterdir_02241e5f93cabead51f634fe1fe0b1a3 {
+    graph [ bgcolor="#ddddee", pencolor="black", label="rapidjson" fontname="Helvetica", fontsize="10", URL="dir_02241e5f93cabead51f634fe1fe0b1a3.html"]
+  dir_456db0ca1fb73f3b3f4c973272a2c373 [shape=box, label="error", style="filled", fillcolor="#eeeeff", pencolor="black", URL="dir_456db0ca1fb73f3b3f4c973272a2c373.html"];
+  }
+}

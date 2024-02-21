@@ -2,8 +2,8 @@
 
 void ServerProfile::save() const
 {
-    if (!checkPathExist(ServerProfile::dir_path))
-        createDirectory(ServerProfile::dir_path);
+    if (!filesystem::checkPathExist(ServerProfile::dir_path))
+        filesystem::createDirectory(ServerProfile::dir_path);
 
     rapidjson::Document profile;
     profile.SetObject();
@@ -17,7 +17,7 @@ void ServerProfile::save() const
     profile.AddMember("buffer_size", buffer_size_, alloc);
 
     const std::string kFilePath = std::string(dir_path) + "/" + name_ + ".json";
-    saveJson(profile, kFilePath.c_str());
+    filesystem::saveJson(profile, kFilePath.c_str());
 
     Logger::getInstance()->logSuccess("Client profile with name " + name_ + " saved with path " + kFilePath);
 }
@@ -33,7 +33,7 @@ void ServerProfile::print() const
 
 std::shared_ptr<ServerProfile> ServerProfile::createFromFile(const std::string& path)
 {
-    auto profile_file = readJson(path);
+    auto profile_file = filesystem::readJson(path);
 
     if (profile_file == nullptr)
         return nullptr;

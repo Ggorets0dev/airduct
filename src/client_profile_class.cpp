@@ -4,7 +4,7 @@
 
 std::shared_ptr<ClientProfile> ClientProfile::createFromFile(const std::string& path)
 {
-    auto profile_file = readJson(path);
+    auto profile_file = filesystem::readJson(path);
 
     if (profile_file == nullptr)
         return nullptr;
@@ -69,8 +69,8 @@ void ClientProfile::print() const
 
 void ClientProfile::save() const
 {
-    if (!checkPathExist(ClientProfile::dir_path))
-        createDirectory(ClientProfile::dir_path);
+    if (!filesystem::checkPathExist(ClientProfile::dir_path))
+        filesystem::createDirectory(ClientProfile::dir_path);
 
     rapidjson::Document profile;
     profile.SetObject();
@@ -86,7 +86,7 @@ void ClientProfile::save() const
 
     const std::string kFilePath = std::string(dir_path) + "/" + name_ + ".json";
 
-    saveJson(profile, kFilePath.c_str());
+    filesystem::saveJson(profile, kFilePath.c_str());
 
     Logger::getInstance()->logSuccess("Client profile with name " + name_ + " saved with path " + kFilePath);
 }

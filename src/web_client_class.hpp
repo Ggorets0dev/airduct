@@ -14,6 +14,8 @@ class WebClient final : public WebDevice
 public:
     WebClient(const char* ip, int port, int buffer_size);
     WebClient(const ClientProfile& profile);
+
+    /// \brief Receive a message from the server by taking the connection settings from the class fields
     std::string getMessage();
 
 private:

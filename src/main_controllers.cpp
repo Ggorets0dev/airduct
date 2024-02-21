@@ -1,4 +1,4 @@
-#include "main_controllers.h"
+#include "main_controllers.hpp"
 
 void printHelp()
 {
@@ -86,24 +86,24 @@ void removeProfile(const char* profile_name)
 {
     if (strcmp(profile_name, "all") == 0)
     {
-        removeDirFiles(ClientProfile::dir_path);
-        removeDirFiles(ServerProfile::dir_path);
+        filesystem::removeDirFiles(ClientProfile::dir_path);
+        filesystem::removeDirFiles(ServerProfile::dir_path);
     }
     else if (strcmp(profile_name, "client") == 0)
     {
-        removeDirFiles(ClientProfile::dir_path);
+        filesystem::removeDirFiles(ClientProfile::dir_path);
     }
     else if (strcmp(profile_name, "server") == 0)
     {
-        removeDirFiles(ServerProfile::dir_path);
+        filesystem::removeDirFiles(ServerProfile::dir_path);
     }
     else
     {
         std::string server_profile_path = ServerProfile::getFilePath(profile_name);
         std::string client_profile_path = ClientProfile::getFilePath(profile_name);
 
-        bool is_deleted_as_server = checkPathExist(server_profile_path.c_str()) && removeFile(server_profile_path.c_str());
-        bool is_deleted_as_client = checkPathExist(client_profile_path.c_str()) && removeFile(client_profile_path.c_str());
+        bool is_deleted_as_server = filesystem::checkPathExist(server_profile_path.c_str()) && filesystem::removeFile(server_profile_path.c_str());
+        bool is_deleted_as_client = filesystem::checkPathExist(client_profile_path.c_str()) && filesystem::removeFile(client_profile_path.c_str());
 
         if (is_deleted_as_server || is_deleted_as_client)
             Logger::getInstance()->logSuccess("Successfully deleted profile on path " + std::string(profile_name));
@@ -119,25 +119,25 @@ void displayProfile(const char* profile_name)
 
     if (strcmp(profile_name, "all") == 0)
     {
-        client_paths = getFilePaths(ClientProfile::dir_path);
-        server_paths = getFilePaths(ServerProfile::dir_path);
+        client_paths = filesystem::getFilePaths(ClientProfile::dir_path);
+        server_paths = filesystem::getFilePaths(ServerProfile::dir_path);
     }
     else if (strcmp(profile_name, "client") == 0)
     {
-        client_paths = getFilePaths(ClientProfile::dir_path);
+        client_paths = filesystem::getFilePaths(ClientProfile::dir_path);
     }
     else if (strcmp(profile_name, "server") == 0)
     {
-        server_paths = getFilePaths(ServerProfile::dir_path);
+        server_paths = filesystem::getFilePaths(ServerProfile::dir_path);
     }
     else
     {
         auto cl_path = ClientProfile::getFilePath(profile_name);
         auto se_path = ServerProfile::getFilePath(profile_name);
 
-        if (checkPathExist(cl_path.c_str()))
+        if (filesystem::checkPathExist(cl_path.c_str()))
             client_paths.push_back(cl_path);
-        else if (checkPathExist(se_path.c_str()))
+        else if (filesystem::checkPathExist(se_path.c_str()))
             server_paths.push_back(cl_path);
     }
 
@@ -178,11 +178,11 @@ std::shared_ptr<ConnectionProfile> collectProfile(const std::string& profile_nam
     auto client_path = ClientProfile::getFilePath(profile_name);
     auto server_path = ServerProfile::getFilePath(profile_name);
 
-    if (checkPathExist(client_path.c_str()))
+    if (filesystem::checkPathExist(client_path.c_str()))
     {
         return ClientProfile::createFromFile(client_path);
     }
-    else if (checkPathExist(server_path.c_str()))
+    else if (filesystem::checkPathExist(server_path.c_str()))
     {
         return ServerProfile::createFromFile(server_path);
     }

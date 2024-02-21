@@ -7,7 +7,7 @@
 #include "logger_class.hpp"
 #include "client_profile_class.hpp"
 #include "server_profile_class.hpp"
-#include "main_controllers.h"
+#include "main_controllers.hpp"
 #include "project_info.h"
 #include "version.h"
 
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
 
             try
             {
-                std::string command_output = executeCommand(command);
+                std::string command_output = filesystem::executeCommand(command);
                 web_server->sendMessage(command_output);
                 Logger::getInstance()->logSuccess("Message successfully sent to the connected client");
             }
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
                 raw_command = "echo \"" + raw_command + "\" | " + std::string(command);
 
                 std::cout << "Command has been processed and has the following output:" << std::endl;
-                std::cout << executeCommand(raw_command.c_str()) << std::endl;
+                std::cout << filesystem::executeCommand(raw_command.c_str()) << std::endl;
             }
             catch (std::runtime_error& error)
             {

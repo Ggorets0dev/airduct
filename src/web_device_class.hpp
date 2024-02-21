@@ -17,6 +17,7 @@ protected:
     int port_;
     int buffer_size_;
 
+    /// \brief Process an internal socket field and add it to the system
     virtual void configureSocket() = 0;
 };
 

@@ -16,22 +16,73 @@
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
 
-std::vector<std::string> getFileNames(const std::string &path);
+///
+/// \brief Performing operations with the distribution file system
+///
+namespace filesystem
+{
+    ///
+    /// \brief Getting all file names in the specified directory
+    /// \param path - Directory path
+    /// \return Array of file names
+    ///
+    std::vector<std::string> getFileNames(const std::string &path);
 
-std::vector<std::string> getFilePaths(const std::string &path);
+    ///
+    /// \brief Getting all file paths in the specified directory
+    /// \param path - Directory path
+    /// \return Array of file paths
+    ///
+    std::vector<std::string> getFilePaths(const std::string &path);
 
-bool checkPathExist(const char* path);
+    ///
+    /// \brief Check if specified dir or file exist
+    /// \param path - Directory of file path
+    /// \return Status of existence
+    ///
+    bool checkPathExist(const char* path);
 
-bool createDirectory(const char* path);
+    ///
+    /// \brief Create directory with specified path
+    /// \param path - Directory path
+    /// \return Status of success
+    ///
+    bool createDirectory(const char* path);
 
-bool removeFile(const char* path);
+    ///
+    /// \brief Remove file with specified path
+    /// \param path - File path
+    /// \return Status of success
+    ///
+    bool removeFile(const char* path);
 
-bool removeDirFiles(const char* dir_path);
+    ///
+    /// \brief Remove file with specified path
+    /// \param path - File path
+    /// \return Status of success
+    ///
+    bool removeDirFiles(const char* path);
 
-void saveJson(const rapidjson::Document& doc, const std::string& path);
+    ///
+    /// \brief Save JSON object with specified path
+    /// \param path - File path
+    /// \return Status of success
+    ///
+    void saveJson(const rapidjson::Document& doc, const std::string& path);
 
-std::shared_ptr<rapidjson::Document> readJson(const std::string& path);
+    ///
+    /// \brief Read JSON object from file with specified path
+    /// \param path - File path
+    /// \return Status of success
+    ///
+    std::shared_ptr<rapidjson::Document> readJson(const std::string& path);
 
-std::string executeCommand(const char* cmd);
+    ///
+    /// \brief Execute command in system
+    /// \param cmd - Command to execute
+    /// \return Command output
+    ///
+    std::string executeCommand(const char* cmd);
+}
 
 #endif // FILESYSTEM_H

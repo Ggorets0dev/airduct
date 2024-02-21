@@ -13,8 +13,23 @@ public:
     void operator = (const Logger& other) = delete;
 
     Logger();
-    void logError(const std::string&) const;
+
+    ///
+    /// \brief Output a message to CERR with error mark
+    /// \param text - Log message
+    ///
+    void logError(const std::string& text) const;
+
+    ///
+    /// \brief Output a message to COUT with information mark
+    /// \param text - Log message
+    ///
     void logMessage(const std::string& text) const;
+
+    ///
+    /// \brief Output a message to COUT with success mark
+    /// \param text - Log message
+    ///
     void logSuccess(const std::string& text) const;
 };
 

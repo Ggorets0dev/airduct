@@ -1,0 +1,11 @@
+digraph "build/vendor/rapidjson/src/rapidjson/test/unittest" {
+  compound=true
+  node [ fontsize="10", fontname="Helvetica"];
+  edge [ labelfontsize="10", labelfontname="Helvetica"];
+  subgraph clusterdir_fe9840bda65bf71b5a0cd6e7f2827e94 {
+    graph [ bgcolor="#ddddee", pencolor="black", label="test" fontname="Helvetica", fontsize="10", URL="dir_fe9840bda65bf71b5a0cd6e7f2827e94.html"]
+  dir_d4a5959b8b337341b4b8dee1a5254b4b [shape=box, label="unittest", style="filled", fillcolor="#eeeeff", pencolor="black", URL="dir_d4a5959b8b337341b4b8dee1a5254b4b.html"];
+  }
+  dir_13cda55ee060365935dd1d37eaa22914 [shape=box label="include" fillcolor="white" style="filled" color="red" URL="dir_13cda55ee060365935dd1d37eaa22914.html"];
+  dir_d4a5959b8b337341b4b8dee1a5254b4b->dir_13cda55ee060365935dd1d37eaa22914 [headlabel="13", labeldistance=1.5 headhref="dir_000031_000024.html"];
+}

@@ -1,0 +1,13 @@
+digraph "build/vendor" {
+  compound=true
+  node [ fontsize="10", fontname="Helvetica"];
+  edge [ labelfontsize="10", labelfontname="Helvetica"];
+  subgraph clusterdir_4fef79e7177ba769987a8da36c892c5f {
+    graph [ bgcolor="#ddddee", pencolor="black", label="build" fontname="Helvetica", fontsize="10", URL="dir_4fef79e7177ba769987a8da36c892c5f.html"]
+  subgraph clusterdir_5419a73a972328982e4314dadb4d6582 {
+    graph [ bgcolor="#eeeeff", pencolor="black", label="" URL="dir_5419a73a972328982e4314dadb4d6582.html"];
+    dir_5419a73a972328982e4314dadb4d6582 [shape=plaintext label="vendor"];
+    dir_3d21519abded866c4ac4ae915a7bbd53 [shape=box label="rapidjson" color="red" fillcolor="white" style="filled" URL="dir_3d21519abded866c4ac4ae915a7bbd53.html"];
+  }
+  }
+}
