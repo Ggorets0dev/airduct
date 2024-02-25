@@ -15,6 +15,28 @@ Logger* Logger::global_instance = nullptr;
 const char* ClientProfile::dir_path = "./client_profiles";
 const char* ServerProfile::dir_path = "./server_profiles";
 
+enum class ConnectionSettingsSource
+{
+    NotSelected,
+    OneTime,
+    Profile
+};
+
+enum class NetworkMode
+{
+    NotSelected,
+    Server,
+    Client
+};
+
+void printSoftwareInformation()
+{
+    std::cout << "AirDuct v" << g_version << std::endl;
+    std::cout << "Developer: " << g_developer << std::endl;
+    std::cout << "Repository: " << g_repository << std::endl;
+    std::cout << "License: " << g_license << std::endl;
+}
+
 const option longOptions[] = {
     { "version", no_argument, nullptr, 'v' },
     { "help", no_argument, nullptr, 'h' },
@@ -29,14 +51,6 @@ const option longOptions[] = {
     { nullptr, 0, nullptr, 0 }
 };
 
-void printSoftwareInformation()
-{
-    std::cout << "AirDuct v" << g_version << std::endl;
-    std::cout << "Developer: " << g_developer << std::endl;
-    std::cout << "Repository: " << g_repository << std::endl;
-    std::cout << "License: " << g_license << std::endl;
-}
-
 int main(int argc, char** argv)
 {
     std::shared_ptr<ConnectionProfile> profile;
@@ -44,9 +58,9 @@ int main(int argc, char** argv)
 
     std::string buffer; // NOTE - For different operations in switch-case statement
 
-    bool isExecuteCalled(false);
-    bool isDestinationSet(false), isProfileSet(false);
-    bool isObtainMode(false), isTransmitMode(false);
+    bool isExecuteCalled {false};
+    ConnectionSettingsSource source {ConnectionSettingsSource::NotSelected};
+    NetworkMode mode {NetworkMode::NotSelected};
 
     int option, optinx;
     while ((option = getopt_long(argc, argv, "e:d:c:r:s:p:vhto", longOptions, &optinx)) != -1)
@@ -86,12 +100,12 @@ int main(int argc, char** argv)
             break;
 
         case 't':
-            isTransmitMode = true;
+            mode = NetworkMode::Server;
             Logger::getInstance()->logMessage("Information sending mode is set");
             break;
 
         case 'o':
-            isObtainMode = true;
+            mode = NetworkMode::Client;
             Logger::getInstance()->logMessage("Information acquisition mode is set");
             break;
 
@@ -99,7 +113,7 @@ int main(int argc, char** argv)
             profile = collectProfile(optarg);
 
             if (profile != nullptr)
-                isProfileSet = true;
+                source = ConnectionSettingsSource::Profile;
             else
                 Logger::getInstance()->logError("Unable to continue profile assignment due to file read error");
 
@@ -109,7 +123,7 @@ int main(int argc, char** argv)
             profile = parseConnectionSettings(optarg);
 
             if (profile != nullptr)
-                isDestinationSet = true;
+                source = ConnectionSettingsSource::OneTime;
             else
                 Logger::getInstance()->logError("Unable to continue profile creation due to arguments read error");
 
@@ -125,13 +139,13 @@ int main(int argc, char** argv)
     auto logConnectionError = []() { Logger::getInstance()->logError("Required to define the connection settings: select an existing one profile or enter one-time connection settings"); };
     auto logProfileTypeError = []() { Logger::getInstance()->logError("Type of operation does not match the specified profile"); };
 
-    bool isModeChosen(isObtainMode || isTransmitMode);
-    bool isConnectionDefined(isProfileSet || isDestinationSet);
+    bool isModeChosen {mode != NetworkMode::NotSelected};
+    bool isConnectionSourceDefined {source != ConnectionSettingsSource::NotSelected};
 
     // SECTION - Processing operations
-    if (isExecuteCalled && isModeChosen && isConnectionDefined)
+    if (isExecuteCalled && isModeChosen && isConnectionSourceDefined)
     {
-        if (isTransmitMode)
+        if (mode == NetworkMode::Server)
         {
             auto server_profile = std::dynamic_pointer_cast<ServerProfile>(profile);
 
@@ -154,7 +168,7 @@ int main(int argc, char** argv)
                 Logger::getInstance()->logError(error.what());
             }
         }
-        else if (isObtainMode)
+        else if (mode == NetworkMode::Client)
         {
             auto client_profile = std::dynamic_pointer_cast<ClientProfile>(profile);
 
@@ -186,7 +200,7 @@ int main(int argc, char** argv)
     {
         logConnectionError();
     }
-    else if (isExecuteCalled && isConnectionDefined)
+    else if (isExecuteCalled && isConnectionSourceDefined)
     {
         logModeError();
     }
