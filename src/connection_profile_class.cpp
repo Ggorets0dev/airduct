@@ -32,7 +32,7 @@ bool ConnectionProfile::trySetDetails(const std::string& text)
     {
         return false;
     }
-};
+}
 
 bool ConnectionProfile::trySetBufferSize(int buffer_size)
 {

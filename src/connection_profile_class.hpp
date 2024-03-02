@@ -11,22 +11,29 @@
 
 #include "rapidjson/document.h"
 
+enum class ConnectionSettingsSource
+{
+    NotSelected,
+    OneTime,
+    Profile
+};
+
 class ConnectionProfile
 {
 public:
     const std::string name_;
 
     ConnectionProfile(const std::string& name);
-    virtual ~ConnectionProfile() {};
+    virtual ~ConnectionProfile() {}
 
     /// \brief Getter for port field
-    int getPort() const             { return port_; };
+    int getPort() const             { return port_; }
 
     /// \brief Getter for buffer_size field
-    int getBufferSize() const       { return buffer_size_; };
+    int getBufferSize() const       { return buffer_size_; }
 
     /// \brief Getter for details field
-    std::string getDetails() const  { return details_; };
+    std::string getDetails() const  { return details_; }
 
     /// \brief Setter for port field
     bool trySetPort(int port);

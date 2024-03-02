@@ -5,7 +5,7 @@ project(airduct LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(airduct_VERSION "0.12.0")
+set(airduct_VERSION "0.12.1")
 
 include("${CMAKE_SOURCE_DIR}/vendor/rapidjson.cmake")
 

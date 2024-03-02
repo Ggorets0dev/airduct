@@ -7,6 +7,7 @@
 #include "connection_profile_class.hpp"
 #include "client_profile_class.hpp"
 #include "server_profile_class.hpp"
+#include "web_device_class.hpp"
 
 // SECTION - Auxiliary functions for processing command line arguments
 /// \brief Display available commands and other argument information

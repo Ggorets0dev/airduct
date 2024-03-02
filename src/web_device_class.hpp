@@ -7,6 +7,13 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
+enum class NetworkMode
+{
+    NotSelected,
+    Server,
+    Client
+};
+
 class WebDevice
 {
 public:

@@ -15,20 +15,6 @@ Logger* Logger::global_instance = nullptr;
 const char* ClientProfile::dir_path = "./client_profiles";
 const char* ServerProfile::dir_path = "./server_profiles";
 
-enum class ConnectionSettingsSource
-{
-    NotSelected,
-    OneTime,
-    Profile
-};
-
-enum class NetworkMode
-{
-    NotSelected,
-    Server,
-    Client
-};
-
 void printSoftwareInformation()
 {
     std::cout << "AirDuct v" << g_version << std::endl;

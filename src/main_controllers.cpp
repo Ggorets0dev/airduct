@@ -20,8 +20,10 @@ void printHelp()
     std::cout << "Format of connection settings:" << std::endl;
 
     buffer = "Client: IP:PORT/BUFFER_SIZE\n";
-    buffer += "Server: PORT/BUFFER_SIZE";
-
+    buffer += "Server: PORT/BUFFER_SIZE\n";
+    buffer += "Note: IP pattern is IPv4 (255.255.255.255)\n";
+    buffer += "Note: Port limitations are 1000 - 9999\n";
+    buffer += "Note: Buffer size limitations are 100 - 10000";
     std::cout << buffer << std::endl;
     std::cout << std::endl;
     std::cout << "Additional information:" << std::endl;
@@ -33,14 +35,15 @@ void printHelp()
 
 void createProfile(const char* type)
 {
-    bool isClient(false), isServer(false);
+    NetworkMode mode {NetworkMode::NotSelected};
+
     std::string profile_name;
     ConnectionProfile* new_profile;
 
     if (strcmp(type, "client") == 0)
-        isClient = true;
+        mode = NetworkMode::Client;
     else if (strcmp(type, "server") == 0)
-        isServer = true;
+        mode = NetworkMode::Server;
     else
         return Logger::getInstance()->logError("No specified connection profile type exists");
 
@@ -57,12 +60,12 @@ void createProfile(const char* type)
 
     try
     {
-        if (isClient)
+        if (mode == NetworkMode::Client)
         {
             new_profile = new ClientProfile(profile_name);
             new_profile->fillFromCin();
         }
-        else
+        else if ((mode == NetworkMode::Server))
         {
             new_profile = new ServerProfile(profile_name);
             new_profile->fillFromCin();
