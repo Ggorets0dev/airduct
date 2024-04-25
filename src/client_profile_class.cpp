@@ -42,11 +42,11 @@ std::shared_ptr<ClientProfile> ClientProfile::createFromFile(const std::string& 
     return profile;
 }
 
-bool ClientProfile::trySetAddress(const std::string& text)
+bool ClientProfile::trySetAddress(std::string& text)
 {
-    const std::regex kAddressRegex("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$"); // IPv4 pattern
+    const std::regex kAddressRegex(IPV4_PATTERN);
 
-    if (std::regex_match(text, kAddressRegex))
+    if (convertLocalhost(text) || std::regex_match(text, kAddressRegex))
     {
         address_ = text;
         return true;
@@ -127,4 +127,17 @@ void ClientProfile::fillFromString(const std::string &text)
         throw std::invalid_argument("Address could not be set, value does not meet requirements");
 
     ConnectionProfile::fillFromString(text.substr(colon_inx + 1, text.size() - colon_inx));
+}
+
+bool ClientProfile::convertLocalhost(std::string& address)
+{
+    if (address == "localhost")
+    {
+        address = "127.0.0.1";
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }

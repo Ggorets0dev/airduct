@@ -4,7 +4,7 @@ ConnectionProfile::ConnectionProfile(const std::string& name) : name_(name) {}
 
 bool ConnectionProfile::trySetPort(int port)
 {
-    if (port >= 1000 & port <= 9999)
+    if (port >= MIN_PORT & port <= MAX_PORT)
     {
         port_ = port;
         return true;
@@ -18,7 +18,7 @@ bool ConnectionProfile::trySetPort(int port)
 
 bool ConnectionProfile::trySetDetails(const std::string& text)
 {
-    if (!text.empty() && text.length() < 250)
+    if (!text.empty() && text.length() < MAX_DETAILS_LEN)
     {
         details_ = text;
         return true;
@@ -36,10 +36,7 @@ bool ConnectionProfile::trySetDetails(const std::string& text)
 
 bool ConnectionProfile::trySetBufferSize(int buffer_size)
 {
-    const int min_size(100);
-    const int max_size(100'000);
-
-    if (buffer_size > min_size && buffer_size < max_size)
+    if (buffer_size > MIN_BUFFER_SIZE && buffer_size < MAX_BUFFER_SIZE)
     {
         buffer_size_ = buffer_size;
         return true;

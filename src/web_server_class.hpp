@@ -12,8 +12,8 @@
 class WebServer final : public WebDevice
 {
 public:
-    WebServer(int port_, int buffer_size_) : WebDevice(port_, buffer_size_) {};
-    WebServer(const ServerProfile& profile) : WebDevice(profile.getPort(), profile.getBufferSize()) {};
+    WebServer(int port_, int buffer_size_) : WebDevice(port_, buffer_size_) {}
+    WebServer(const ServerProfile& profile) : WebDevice(profile.getPort(), profile.getBufferSize()) {}
 
     /// \brief Send a message to the connected client by taking the connection settings from the class fields
     void sendMessage(const std::string& text);

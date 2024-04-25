@@ -11,6 +11,12 @@
 
 #include "rapidjson/document.h"
 
+#define MIN_PORT 1024
+#define MAX_PORT 65535
+#define MIN_BUFFER_SIZE 100
+#define MAX_BUFFER_SIZE 100000
+#define MAX_DETAILS_LEN 250
+
 enum class ConnectionSettingsSource
 {
     NotSelected,

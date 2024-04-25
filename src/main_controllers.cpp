@@ -21,9 +21,9 @@ void printHelp()
 
     buffer = "Client: IP:PORT/BUFFER_SIZE\n";
     buffer += "Server: PORT/BUFFER_SIZE\n";
-    buffer += "Note: IP pattern is IPv4 (255.255.255.255)\n";
-    buffer += "Note: Port limitations are 1000 - 9999\n";
-    buffer += "Note: Buffer size limitations are 100 - 10000";
+    buffer += "Note: IP pattern is IPv4 (a specific host address, not a network or broadcast address)\n";
+    buffer += "Note: Port limitations are " + std::to_string(MIN_PORT) + " - " + std::to_string(MAX_PORT) + "\n";
+    buffer += "Note: Buffer size limitations are " + std::to_string(MIN_BUFFER_SIZE) + " - " + std::to_string(MAX_BUFFER_SIZE);
     std::cout << buffer << std::endl;
     std::cout << std::endl;
     std::cout << "Additional information:" << std::endl;

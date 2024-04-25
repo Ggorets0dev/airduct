@@ -5,6 +5,8 @@
 #include <memory>
 #include "connection_profile_class.hpp"
 
+#define IPV4_PATTERN "^(25[0-4]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?)\\.(25[0-4]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?)\\.(25[0-4]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?)\\.(25[0-4]|2[0-4][0-8]|1[0-9][0-9]|[1-9][0-9]|[1-9])$"
+
 class ClientProfile final : public ConnectionProfile
 {
 public:
@@ -24,13 +26,13 @@ public:
     ///
     static std::string getFilePath(const std::string& profile_name);
 
-    ClientProfile(const std::string& name) : ConnectionProfile(name) {};
+    ClientProfile(const std::string& name) : ConnectionProfile(name) {}
 
     /// \brief Getter for Address field
-    std::string getAddress() const  { return address_; };
+    std::string getAddress() const  { return address_; }
 
     /// \brief Setter for Address field
-    bool trySetAddress(const std::string& text);
+    bool trySetAddress(std::string& text);
 
     void fillFromString(const std::string& text) override;
     void fillFromCin() override;
@@ -39,6 +41,8 @@ public:
 
 private:
     std::string address_;
+
+    bool convertLocalhost(std::string& address);
 };
 
 #endif // CLIENTPROFILE_HPP

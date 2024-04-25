@@ -25,11 +25,10 @@ public:
     ///
     static std::string getFilePath(const std::string& profile_name);
 
-    ServerProfile(const std::string& name) : ConnectionProfile(name) {};
+    ServerProfile(const std::string& name) : ConnectionProfile(name) {}
 
     void save() const override;
     void print() const override;
-
 };
 
 #endif // SERVERPROFILE_HPP
